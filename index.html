@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Кликер с ракетами</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body { background: #0a0e17; color: #e0e8f0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        #app { background: #141b2b; border-radius: 20px; padding: 20px; width: 400px; max-width: 95vw; border: 1px solid #2a3a5a; }
+        #header h1 { font-size: 24px; background: linear-gradient(135deg, #00d4ff, #7b2ffc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; margin-bottom: 15px; }
+        #stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; }
+        #cl { width: 100%; padding: 60px 20px; font-size: 28px; font-weight: bold; background: linear-gradient(135deg, #1a2a4a, #2a4a7a); border: 2px solid #00d4ff; border-radius: 16px; color: white; cursor: pointer; margin: 15px 0; }
+        #shop button { width: 100%; padding: 14px 20px; background: rgba(0,212,255,0.08); border: 1px solid #2a3a5a; border-radius: 12px; color: #e0e8f0; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; margin-bottom: 8px; }
+        #shop button span { color: #00d4ff; font-weight: bold; }
+        #rocketShop { display: none; border-top: 1px solid #2a3a5a; padding-top: 10px; }
+        #achBtn { width: 100%; padding: 12px; background: rgba(123,47,252,0.2); border: 1px solid #7b2ffc; border-radius: 12px; color: #e0e8f0; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 2000; }
+        #modal-content { background: #141b2b; border-radius: 20px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        #modal-content h2 { color: #00d4ff; text-align: center; margin-bottom: 20px; }
+        .ach-row { padding: 12px 15px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 8px; }
+        .ach-row span { color: #00ff88; font-weight: bold; }
+        #closeModal { float: right; background: none; border: none; color: #e0e8f0; font-size: 24px; cursor: pointer; }
+        .floating-text { position: fixed; font-size: 24px; font-weight: bold; color: #00d4ff; pointer-events: none; animation: floatUp 0.8s ease forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
+        .toast { position: fixed; top: 20px; right: 20px; background: #141b2b; border: 1px solid #00d4ff; border-radius: 12px; padding: 15px; z-index: 999; max-width: 350px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="header"><h1>🚀 Кликер с ракетами</h1></div>
+    <div id="stats">
+        <div>🪙 Монеты: <span id="c">0</span></div>
+        <div>⚡ Сила: <span id="p">1</span></div>
+        <div>🤖 Авто: <span id="a">0</span></div>
+        <div>🚀 Ракеты: <span id="r">0</span></div>
+        <div>🎯 Шанс крита: <span id="crit">5%</span></div>
+        <div>📈 Продуктивность: <span id="prod">0</span></div>
+    </div>
+    <button id="cl">💥 КЛИК 💥</button>
+    <div id="shop">
+        <button id="bp">💪 Улучшить силу <span id="pc">10</span></button>
+        <button id="ba">🤖 Купить автокликер <span id="ac">50</span></button>
+        <button id="bc">🎯 Улучшить шанс крита <span id="cc">100</span></button>
+        <button id="bprod">📈 Повысить продуктивность <span id="pcost">200</span></button>
+        <div id="rocketShop">
+            <div style="text-align:center;color:#00d4ff;">🚀 РАКЕТЫ ДОСТУПНЫ! 🚀</div>
+            <button id="br">🚀 Купить ракету <span id="rc">5000</span></button>
+        </div>
+    </div>
+    <button id="achBtn">🏆 Достижения</button>
+</div>
+<div id="modal">
+    <div id="modal-content">
+        <button id="closeModal">✕</button>
+        <h2>🏆 Достижения</h2>
+        <div id="list"></div>
+    </div>
+</div>
+<script>
+let g = {
+    coins: 0, power: 1, auto: 0, rocket: 0,
+    powerCost: 10, autoCost: 50, rocketCost: 5000,
+    critChance: 5, critCost: 100, critLevel: 0,
+    productivityLevel: 0, productivityCost: 200,
+    achievement1: false, achievement2: false, achievement3: false,
+    achievement4: false, achievement5: false, achievement6: false,
+    achievement7: false, achievement8: false, achievement9: false,
+    achievement10: false, achievement11: false, achievement12: false,
+    antiClickerAchievement: false,
+    gaveAntiClicker: false // Флаг, чтобы не выдавать достижение дважды
+};
+function s() { localStorage.k = JSON.stringify(g); }
+try { Object.assign(g, JSON.parse(localStorage.k || "{}")); } catch(e) {}
+function showNotification(title, desc) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<b>🏆 ${title}</b><br>${desc}`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4500);
+}
+function u() {
+    document.getElementById('c').textContent = Math.floor(g.coins).toLocaleString();
+    document.getElementById('p').textContent = g.power;
+    document.getElementById('a').textContent = g.auto;
+    document.getElementById('r').textContent = g.rocket;
+    document.getElementById('crit').textContent = g.critChance + '%';
+    document.getElementById('prod').textContent = g.productivityLevel;
+    document.getElementById('pc').textContent = g.power>=10000?"MAX":g.powerCost;
+    document.getElementById('ac').textContent = g.auto>=1000?"MAX":g.autoCost;
+    document.getElementById('cc').textContent = g.critChance>=75?"MAX":g.critCost;
+    document.getElementById('pcost').textContent = g.productivityLevel>=1000?"MAX":g.productivityCost;
+    document.getElementById('rc').textContent = g.rocket>=100?"MAX":g.rocketCost;
+    document.getElementById('rocketShop').style.display = g.auto>=10 ? "block" : "none";
+    if (g.coins>=1 && !g.achievement1) { g.achievement1=true; showNotification("Первый урожай","Заработать первую монету"); }
+    if (g.power>=10 && !g.achievement2) { g.achievement2=true; showNotification("Сила воли","Улучшить силу до 10"); }
+    if (g.auto>=5 && !g.achievement3) { g.achievement3=true; showNotification("Начало лени","Купить 5 автокликеров"); }
+    if (g.auto>=10 && !g.achievement4) { g.achievement4=true; showNotification("Любитель автоматизации","Купить 10 автокликеров"); }
+    if (g.rocket>=1 && !g.achievement5) { g.achievement5=true; showNotification("К вам летит ракета","Запустить первую ракету"); }
+    if (g.rocket>=5 && !g.achievement6) { g.achievement6=true; showNotification("Ракетный воин","Запустить 5 ракет"); }
+    if (g.coins>=1000 && !g.achievement7) { g.achievement7=true; showNotification("Первая тысяча","Заработать 1000 монет"); }
+    if (g.rocket>=10 && !g.achievement8) { g.achievement8=true; showNotification("Космодром","Запустить 10 ракет"); }
+    if (g.auto>=50 && !g.achievement9) { g.achievement9=true; showNotification("Автоматизация","Купить 50 автокликеров"); }
+    if (g.coins>=10000 && !g.achievement10) { g.achievement10=true; showNotification("Десятка","Заработать 10000 монет"); }
+    if (g.rocket>=100 && !g.achievement12) { g.achievement12=true; showNotification("Кто разрешил?","100 ракет, зачем тебе столько"); }
+    s();
+    renderAchievements();
+}
+function renderAchievements() {
+    const list = document.getElementById('list');
+    const data = [];
+    if(g.achievement1) data.push({t:"Первый урожай",d:"Заработать первую монету"});
+    if(g.achievement2) data.push({t:"Сила воли",d:"Улучшить силу до 10"});
+    if(g.achievement3) data.push({t:"Начало лени",d:"Купить 5 автокликеров"});
+    if(g.achievement4) data.push({t:"Любитель автоматизации",d:"Купить 10 автокликеров"});
+    if(g.achievement5) data.push({t:"К вам летит ракета",d:"Запустить первую ракету"});
+    if(g.achievement6) data.push({t:"Ракетный воин",d:"Запустить 5 ракет"});
+    if(g.achievement7) data.push({t:"Первая тысяча",d:"Заработать 1000 монет"});
+    if(g.achievement8) data.push({t:"Космодром",d:"Запустить 10 ракет"});
+    if(g.achievement9) data.push({t:"Автоматизация",d:"Купить 50 автокликеров"});
+    if(g.achievement10) data.push({t:"Десятка",d:"Заработать 10000 монет"});
+    if(g.achievement11) data.push({t:"Критический удар",d:"Сделать критический клик"});
+    if(g.achievement12) data.push({t:"Кто разрешил?",d:"100 ракет, зачем тебе столько"});
+    if(g.antiClickerAchievement) data.push({t:"А ты дохрена умный",d:"Впервые используй автокликер"});
+    if(data.length===0) list.innerHTML = '<div style="text-align:center;opacity:0.6;padding:20px;">Пока нет достижений</div>';
+    else list.innerHTML = data.map(i => `<div class="ach-row"><span>✅ ${i.t}</span><br><small>${i.d}</small></div>`).join('');
+}
+document.getElementById('cl').addEventListener('click', (e) => {
+    const x = e.clientX || window.innerWidth/2;
+    const y = e.clientY || window.innerHeight/2;
+    const el = document.createElement('div');
+    el.className = 'floating-text';
+    el.style.left = x+'px';
+    el.style.top = y+'px';
+    let chance = Math.random()*100;
+    if(chance < g.critChance) {
+        let bonus = g.power*3;
+        g.coins += bonus;
+        el.textContent = '💥 КРИТ! +'+bonus;
+        el.style.color = '#ff6b35';
+        el.style.fontSize = '32px';
+        if(!g.achievement11) { g.achievement11=true; showNotification("Критический удар","Сделать критический клик"); }
+    } else {
+        g.coins += g.power;
+        el.textContent = '+'+g.power;
+    }
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),800);
+    u();
+});
+document.getElementById('bp').addEventListener('click', ()=>{
+    if(g.power<10000 && g.coins>=g.powerCost){ g.coins-=g.powerCost; g.power++; g.powerCost=Math.floor(g.powerCost*1.5); u(); }
+});
+document.getElementById('ba').addEventListener('click', ()=>{
+    if(g.auto<1000 && g.coins>=g.autoCost){ 
+        g.coins-=g.autoCost; 
+        g.auto++; 
+        g.autoCost=Math.floor(g.autoCost*1.4); 
+        // Достижение выдается только при первой покупке автокликера
+        if(g.auto === 1 && !g.antiClickerAchievement) {
+            g.antiClickerAchievement = true; 
+            showNotification("А ты дохрена умный", "Впервые используй автокликер");
+        }
+        u(); 
+    }
+});
+document.getElementById('bc').addEventListener('click', ()=>{
+    if(g.critChance<75 && g.coins>=g.critCost){ g.coins-=g.critCost; g.critChance++; g.critCost=Math.floor(g.critCost*1.6); u(); }
+});
+document.getElementById('bprod').addEventListener('click', ()=>{
+    if(g.productivityLevel<1000 && g.coins>=g.productivityCost){ g.coins-=g.productivityCost; g.productivityLevel++; g.productivityCost=Math.floor(g.productivityCost*1.15); u(); }
+});
+document.getElementById('br').addEventListener('click', ()=>{
+    if(g.auto>=10 && g.rocket<100 && g.coins>=g.rocketCost){ g.coins-=g.rocketCost; g.rocket++; g.rocketCost=Math.floor(g.rocketCost*1.8); u(); }
+});
+setInterval(()=>{
+    let income=0;
+    if(g.auto>0) income += g.auto * (1 + g.productivityLevel);
+    if(g.rocket>0) income += g.rocket * 100;
+    if(income>0){ g.coins += income; u(); }
+}, 1000);
+document.getElementById('achBtn').addEventListener('click', ()=>{ document.getElementById('modal').style.display='flex'; renderAchievements(); });
+document.getElementById('closeModal').addEventListener('click', ()=>{ document.getElementById('modal').style.display='none'; });
+document.getElementById('modal').addEventListener('click', (e)=>{ if(e.target===document.getElementById('modal')) document.getElementById('modal').style.display='none'; });
+u();
+</script>
+</body>
+</html>
