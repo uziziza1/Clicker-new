@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141b2b;
+            --text-main: #e0e8f0;
+            --accent-color: #00d4ff;
+            --success: #00ff88;
+            --danger: #ff4757;
+            --border-color: #2a3a5a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #app {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 30px;
+            width: 400px;
+            max-width: 95vw;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        #header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        #header h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        #stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        
+        #stats div {
+            padding: 4px 0;
+        }
+        
+        #cl {
+            width: 100%;
+            padding: 60px 20px;
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #1a2a4a, #2a4a7a);
+            border: 2px solid var(--accent-color);
+            border-radius: 16px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.1s;
+            margin: 15px 0;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        #cl:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+        }
+        
+        #cl:active {
+            transform: scale(0.95);
+        }
+        
+        #shop {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        #shop button {
+            padding: 14px 20px;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #shop button:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: var(--accent-color);
+        }
+        
+        #shop button:active {
+            transform: scale(0.98);
+        }
+        
+        #shop button span {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        #rocketShop {
+            display: none;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            margin-top: 5px;
+        }
+        
+        #rocketShop .label {
+            text-align: center;
+            color: var(--accent-color);
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        
+        #achBtn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(123, 47, 252, 0.2);
+            border: 1px solid #7b2ffc;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        
+        #achBtn:hover {
+            background: rgba(123, 47, 252, 0.3);
+        }
+        
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+        
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .toast-title {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .toast-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .floating-text {
+            position: fixed;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+            pointer-events: none;
+            animation: floatUp 0.8s ease forwards;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-80px);
+                opacity: 0;
+            }
+        }
+        
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        
+        #modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        #modal-content h2 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .ach-row {
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .ach-row span {
+            font-weight: bold;
+            font-size: 15px;
+            color: var(--success);
+        }
+        
+        .ach-row small {
+            opacity: 0.8;
+            font-size: 13px;
+        }
+        
+        #closeModal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        
+        #closeModal:hover {
+            opacity: 1;
+        }
+        
+        .locked {
+            opacity: 0.4 !important;
+            cursor: not-allowed !important;
+        }
+        
+        @media (max-width: 450px) {
+            #app {
+                padding: 15px;
+            }
+            #stats {
+                font-size: 12px;
+                grid-template-columns: 1fr 1fr;
+            }
+            #cl {
+                padding: 40px 15px;
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="header">
+            <h1>🚀 Кликер с ракетами</h1>
+            <div id="stats">
+                <div>🪙 Монеты: <span id="c">0</span></div>
+                <div>⚡ Сила: <span id="p">1</span></div>
+                <div>🤖 Авто: <span id="a">0</span></div>
+                <div>🚀 Ракеты: <span id="r">0</span></div>
+                <div>🎯 Шанс крита: <span id="crit">5%</span></div>
+                <div>📈 Продуктивность: <span id="prod">0</span></div>
+            </div>
+        </div>
+        <button id="cl">💥 КЛИК 💥</button>
+        <div id="shop">
+            <button id="bp">💪 Улучшить силу <span id="pc">10</span></button>
+            <button id="ba">🤖 Купить автокликер <span id="ac">50</span></button>
+            <button id="bc">🎯 Улучшить шанс крита <span id="cc">100</span></button>
+            <button id="bprod">📈 Повысить продуктивность <span id="pcost">200</span></button>
+            
+            <div id="rocketShop">
+                <div class="label">🚀 РАКЕТЫ ДОСТУПНЫ! 🚀</div>
+                <button id="br">🚀 Купить ракету <span id="rc">5000</span></button>
+            </div>
+        </div>
+        <button id="achBtn">🏆 Достижения</button>
+        <div id="toast-container"></div>
+        <div id="modal">
+            <div id="modal-content">
+                <button id="closeModal">✕</button>
+                <h2>🏆 Достижения</h2>
+                <div id="list"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let g = {
+            coins: 0,
+            power: 1,
+            auto: 0,
+            rocket: 0,
+            powerCost: 10,
+            autoCost: 50,
+            rocketCost: 5000,
+            // Критические клики
+            critChance: 5,
+            critCost: 100,
+            critLevel: 0,
+            // Продуктивность автокликеров
+            productivityLevel: 0,
+            productivityCost: 200,
+            // Достижения
+            achievement1: false,
+            achievement2: false,
+            achievement3: false,
+            achievement4: false,
+            achievement5: false,
+            achievement6: false,
+            achievement7: false,
+            achievement8: false,
+            achievement9: false,
+            achievement10: false,
+            achievement11: false,
+            antiClickerAchievement: false
+        };
+
+        function s() {
+            localStorage.k = JSON.stringify(g);
+        }
+
+        try {
+            Object.assign(g, JSON.parse(localStorage.k || "{}"));
+        } catch(e) {}
+
+        function showNotification(title, description) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="toast-title">🏆 Достижение: ${title}</div>
+                <div class="toast-desc" style="color: var(--text-main);">${description}</div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4500);
+        }
+
+        function createFloatingText(x, y, text, isCrit = false) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.textContent = text;
+            if (isCrit) {
+                el.style.color = '#ff6b35';
+                el.style.fontSize = '32px';
+                el.style.textShadow = '0 0 30px rgba(255, 107, 53, 0.8)';
+            }
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function u() {
+            // Обновляем статистику
+            document.getElementById('c').textContent = Math.floor(g.coins).toLocaleString();
+            document.getElementById('p').textContent = g.power.toLocaleString();
+            document.getElementById('a').textContent = g.auto.toLocaleString();
+            document.getElementById('r').textContent = g.rocket.toLocaleString();
+            document.getElementById('crit').textContent = g.critChance + '%';
+            document.getElementById('prod').textContent = g.productivityLevel;
+            
+            // Обновляем стоимости
+            document.getElementById('pc').textContent = g.power >= 10000 ? "MAX" : g.powerCost.toLocaleString();
+            document.getElementById('ac').textContent = g.auto >= 1000 ? "MAX" : g.autoCost.toLocaleString();
+            document.getElementById('cc').textContent = g.critChance >= 75 ? "MAX" : g.critCost.toLocaleString();
+            document.getElementById('pcost').textContent = g.productivityLevel >= 1000 ? "MAX" : g.productivityCost.toLocaleString();
+            document.getElementById('rc').textContent = g.rocket >= 100 ? "MAX" : g.rocketCost.toLocaleString();
+            
+            // Показываем магазин ракет, если автокликеров >= 10
+            const rocketShop = document.getElementById('rocketShop');
+            if (g.auto >= 10) {
+                rocketShop.style.display = 'block';
+            } else {
+                rocketShop.style.display = 'none';
+            }
+            
+            // Проверка достижений
+            if (g.coins >= 1 && !g.achievement1) {
+                g.achievement1 = true;
+                showNotification("Первый урожай", "Заработать первую монету");
+            }
+            if (g.power >= 10 && !g.achievement2) {
+                g.achievement2 = true;
+                showNotification("Сила воли", "Улучшить силу до 10");
+            }
+            if (g.auto >= 5 && !g.achievement3) {
+                g.achievement3 = true;
+                showNotification("Начало лени", "Купить 5 автокликеров");
+            }
+            if (g.auto >= 10 && !g.achievement4) {
+                g.achievement4 = true;
+                showNotification("Любитель автоматизации", "Купить 10 автокликеров");
+            }
+            if (g.rocket >= 1 && !g.achievement5) {
+                g.achievement5 = true;
+                showNotification("К вам летит ракета", "Запустить первую ракету. отсылка?");
+            }
+            if (g.rocket >= 5 && !g.achievement6) {
+                g.achievement6 = true;
+                showNotification("Ракетный воин", "Запустить 5 ракет");
+            }
+            if (g.coins >= 1000 && !g.achievement7) {
+                g.achievement7 = true;
+                showNotification("Первая тысяча", "Заработать 1000 монет");
+            }
+            if (g.rocket >= 10 && !g.achievement8) {
+                g.achievement8 = true;
+                showNotification("Космодром", "Запустить 10 ракет");
+            }
+            if (g.auto >= 50 && !g.achievement9) {
+                g.achievement9 = true;
+                showNotification("Автоматизация", "Купить 50 автокликеров");
+            }
+            if (g.coins >= 10000 && !g.achievement10) {
+                g.achievement10 = true;
+                showNotification("Десятка", "Заработать 10000 монет");
+            }
+            
+            s();
+            renderAchievements();
+        }
+
+        function renderAchievements() {
+            const list = document.getElementById('list');
+            const data = [];
+            
+            if (g.achievement1) data.push({ t: "Первый урожай", d: "Заработать первую монету" });
+            if (g.achievement2) data.push({ t: "Сила воли", d: "Улучшить силу до 10" });
+            if (g.achievement3) data.push({ t: "Начало лени", d: "Купить 5 автокликеров" });
+            if (g.achievement4) data.push({ t: "Любитель автоматизации", d: "Купить 10 автокликеров" });
+            if (g.achievement5) data.push({ t: "К вам летит ракета", d: "Запустить первую ракету. отсылка?" });
+            if (g.achievement6) data.push({ t: "Ракетный воин", d: "Запустить 5 ракет" });
+            if (g.achievement7) data.push({ t: "Первая тысяча", d: "Заработать 1000 монет" });
+            if (g.achievement8) data.push({ t: "Космодром", d: "Запустить 10 ракет" });
+            if (g.achievement9) data.push({ t: "Автоматизация", d: "Купить 50 автокликеров" });
+            if (g.achievement10) data.push({ t: "Десятка", d: "Заработать 10000 монет" });
+            if (g.achievement11) data.push({ t: "Критический удар", d: "Сделать критический клик" });
+            if (g.antiClickerAchievement) data.push({ t: "А ты дохрена умный", d: "Впервые используй автокликер" });
+            
+            if (data.length === 0) {
+                list.innerHTML = `<div style="text-align: center; opacity: 0.6; padding: 20px;">Пока нет достижений. Играй дальше! 🎮</div>`;
+            } else {
+                list.innerHTML = data.map(item => `
+                    <div class="ach-row">
+                        <span>✅ ${item.t}</span>
+                        <small>${item.d}</small>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Клик с критом
+        document.getElementById('cl').addEventListener('click', (e) => {
+            const x = e.clientX || window.innerWidth / 2;
+            const y = e.clientY || window.innerHeight / 2;
+            
+            let chance = Math.random() * 100;
+            if (chance < g.critChance) {
+                // Критический клик! ×3
+                let critBonus = g.power * 3;
+                g.coins += critBonus;
+                createFloatingText(x, y, `💥 КРИТ! +${critBonus}`, true);
+                
+                if (!g.achievement11) {
+                    g.achievement11 = true;
+                    showNotification("Критический удар", "Сделать критический клик");
+                }
+            } else {
+                // Обычный клик
+                g.coins += g.power;
+                createFloatingText(x, y, `+${g.power}`);
+            }
+            
+            u();
+        });
+
+        // Улучшить силу
+        document.getElementById('bp').addEventListener('click', () => {
+            if (g.power < 10000 && g.coins >= g.powerCost) {
+                g.coins -= g.powerCost;
+                g.power++;
+                g.powerCost = Math.floor(g.powerCost * 1.5);
+                u();
+            }
+        });
+
+        // Купить автокликер
+        document.getElementById('ba').addEventListener('click', () => {
+            if (g.auto < 1000 && g.coins >= g.autoCost) {
+                g.coins -= g.autoCost;
+                g.auto++;
+                g.autoCost = Math.floor(g.autoCost * 1.4);
+                
+                if (!g.antiClickerAchievement) {
+                    g.antiClickerAchievement = true;
+                    showNotification("А ты дохрена умный", "Впервые используй автокликер");
+                }
+                
+                u();
+            }
+        });
+
+        // Улучшить шанс крита
+        document.getElementById('bc').addEventListener('click', () => {
+            if (g.critChance < 75 && g.coins >= g.critCost) {
+                g.coins -= g.critCost;
+                g.critChance += 1;
+                g.critLevel++;
+                g.critCost = Math.floor(g.critCost * 1.6);
+                u();
+            }
+        });
+
+        // Повысить продуктивность
+        document.getElementById('bprod').addEventListener('click', () => {
+            if (g.productivityLevel < 1000 && g.coins >= g.productivityCost) {
+                g.coins -= g.productivityCost;
+                g.productivityLevel++;
+                g.productivityCost = Math.floor(g.productivityCost * 1.15);
+                u();
+            }
+        });
+
+        // Купить ракету
+        document.getElementById('br').addEventListener('click', () => {
+            if (g.auto >= 10 && g.rocket < 100 && g.coins >= g.rocketCost) {
+                g.coins -= g.rocketCost;
+                g.rocket++;
+                g.rocketCost = Math.floor(g.rocketCost * 1.8);
+                u();
+            }
+        });
+
+        // Автоматический доход: автокликеры с продуктивностью + ракеты
+        setInterval(() => {
+            let income = 0;
+            if (g.auto > 0) {
+                // Каждый автокликер приносит (1 + продуктивность) монет в секунду
+                income += g.auto * (1 + g.productivityLevel);
+            }
+            if (g.rocket > 0) {
+                income += g.rocket * 100;
+            }
+            if (income > 0) {
+                g.coins += income;
+                u();
+            }
+        }, 1000);
+
+        // Открыть достижения
+        document.getElementById('achBtn').addEventListener('click', () => {
+            document.getElementById('modal').style.display = 'flex';
+            renderAchievements();
+        });
+
+        // Закрыть достижения
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('modal').style.display = 'none';
+        });
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) {
+                document.getElementById('modal').style.display = 'none';
+            }
+        });
+
+        u();
+    </script>
+</body>
+  </html>
